@@ -116,7 +116,8 @@ func (r *resourceAccessKey) Schema(ctx context.Context, _ resource.SchemaRequest
 				},
 			},
 			"secret_key": schema.StringAttribute{
-				Computed: true,
+				Computed:  true,
+				Sensitive: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

@@ -768,8 +768,9 @@ func ResourceOutscaleVM() *schema.Resource {
 				Computed: true,
 			},
 			"admin_password": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"get_admin_password": {
 				Type:     schema.TypeBool,

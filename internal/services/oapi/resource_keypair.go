@@ -131,7 +131,8 @@ func (r *resourceKeypair) Schema(ctx context.Context, _ resource.SchemaRequest, 
 				Computed: true,
 			},
 			"private_key": schema.StringAttribute{
-				Computed: true,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"keypair_name": schema.StringAttribute{
 				Required: true,

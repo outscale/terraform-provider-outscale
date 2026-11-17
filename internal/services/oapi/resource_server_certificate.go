@@ -155,7 +155,8 @@ func (r *serverCertificateResource) Schema(ctx context.Context, _ resource.Schem
 				},
 			},
 			"private_key": schema.StringAttribute{
-				Required: true,
+				Required:  true,
+				Sensitive: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
