@@ -512,7 +512,14 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "private_key"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "dependencies": [
                         "random_string.suffix"
@@ -651,7 +658,14 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "admin_password"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "private": "########",
                     "dependencies": [
@@ -760,7 +774,14 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "admin_password"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "private": "########",
                     "dependencies": [
@@ -861,7 +882,14 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "###vm_type###"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "admin_password"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "private": "########",
                     "dependencies": [

@@ -26,7 +26,14 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "private_key"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "dependencies": [
                         "random_string.suffix"
@@ -47,7 +54,14 @@
                         "tags": [],
                         "timeouts": null
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "private_key"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "dependencies": [
                         "random_string.suffix"
@@ -234,7 +248,14 @@
                         "vm_initiated_shutdown_behavior": "stop",
                         "vm_type": "tinav5.c2r2"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "admin_password"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0,
                     "private": "########",
                     "dependencies": [
