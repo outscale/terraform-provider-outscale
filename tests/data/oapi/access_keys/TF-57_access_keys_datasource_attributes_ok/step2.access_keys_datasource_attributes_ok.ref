@@ -63,7 +63,14 @@
                         "timeouts": null,
                         "user_name": "########"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "secret_key"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0
                 }
             ]
@@ -89,7 +96,14 @@
                         "timeouts": null,
                         "user_name": "########"
                     },
-                    "sensitive_attributes": [],
+                    "sensitive_attributes": [
+                        [
+                            {
+                                "type": "get_attr",
+                                "value": "secret_key"
+                            }
+                        ]
+                    ],
                     "identity_schema_version": 0
                 }
             ]
