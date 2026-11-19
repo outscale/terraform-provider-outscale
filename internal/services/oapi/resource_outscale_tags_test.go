@@ -22,7 +22,7 @@ func TestAccVM_tags(t *testing.T) {
 
 	if os.Getenv("TEST_QUOTA") == "true" {
 		testacc.ParallelTest(t, resource.TestCase{
-			CheckDestroy: testAccCheckOutscaleVMDestroy,
+			CheckDestroy: testAccCheckOutscaleVMDestroy(t.Context()),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccCheckOAPIInstanceConfigTags(omi, testAccVmType, utils.GetRegion(), "keyOriginal", "valueOriginal"),

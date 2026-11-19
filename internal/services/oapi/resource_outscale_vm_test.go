@@ -29,12 +29,12 @@ func TestAccVM_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigBasic(omi, testAccVmType, region, keypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &server),
+					testAccCheckOutscaleVMExists(t.Context(), resourceName, &server),
 					testAccCheckOutscaleVMAttributes(t, &server, omi),
 
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
@@ -57,7 +57,7 @@ func TestAccVM_CreateFailureKeepsState(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: testacc.CreateFailureReplacementSteps(
 			resourceName,
 			testAccVmsConfigWithTag(omi, testAccVmType, region, invalidTagKey, tagValue, keypair, sgName),
@@ -79,13 +79,13 @@ func TestAccVM_DefaultSecurityGroup(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			// create without security_group_ids: assigns default sg
 			{
 				Config: testAccCheckOutscaleVMConfigNoSecurityGroup(omi, testAccVmType),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &server),
+					testAccCheckOutscaleVMExists(t.Context(), resourceName, &server),
 					resource.TestCheckResourceAttrSet(resourceName, "security_group_ids.#"),
 				),
 			},
@@ -140,12 +140,12 @@ func TestAccVM_uefi(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMUefi(omi, testAccVmType, region, keypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &server),
+					testAccCheckOutscaleVMExists(t.Context(), resourceName, &server),
 					testAccCheckOutscaleVMAttributes(t, &server, omi),
 
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
@@ -167,12 +167,12 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMBehaviorConfigBasic(omi, testAccVmType, region, keypair, "highest", "stop", sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basicr1", &server),
+					testAccCheckOutscaleVMExists(t.Context(), "outscale_vm.basicr1", &server),
 					testAccCheckOutscaleVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basicr1", "image_id", omi),
@@ -183,7 +183,7 @@ func TestAccVM_Behavior_Basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleVMBehaviorConfigBasic(omi, testAccVmType, region, keypair, "highest", "restart", sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basicr1", &server),
+					testAccCheckOutscaleVMExists(t.Context(), "outscale_vm.basicr1", &server),
 					testAccCheckOutscaleVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basicr1", "image_id", omi),
@@ -233,12 +233,12 @@ func TestAccVM_importBasic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfigImport(omi, testAccVmType, region, keypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &server),
+					testAccCheckOutscaleVMExists(t.Context(), resourceName, &server),
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 					resource.TestCheckResourceAttr(resourceName, "keypair_name", keypair),
@@ -281,12 +281,12 @@ func TestAccVM_withTags(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, testAccVmType, utils.GetRegion(), tagsValue, keypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic_tags", &server),
+					testAccCheckOutscaleVMExists(t.Context(), "outscale_vm.basic_tags", &server),
 					testAccCheckOutscaleVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic_tags", "image_id", omi),
@@ -336,7 +336,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey(omi, testAccVmType, region, generatedKeypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &before),
+					testAccCheckOutscaleVMExists(t.Context(), resourceName, &before),
 					testAccCheckOutscaleVMAttributes(t, &before, omi),
 					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
@@ -345,7 +345,7 @@ func TestAccVM_UpdateKeypair(t *testing.T) {
 			{
 				Config: testAccVmsConfigUpdateOAPIVMKey2(omi, testAccVmType, region, generatedKeypair, existingKeypair, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists(resourceName, &after),
+					testAccCheckOutscaleVMExists(t.Context(), resourceName, &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
 					resource.TestCheckResourceAttr(resourceName, "vm_type", testAccVmType),
 				),
@@ -382,7 +382,7 @@ func TestAccVM_UpdateDeletionProtection(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, keypair, vmType, true, sgName),
@@ -409,7 +409,7 @@ func TestAccVM_UpdateTags(t *testing.T) {
 	// TODO: check tags
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleVMDestroy,
+		CheckDestroy:             testAccCheckOutscaleVMDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, testAccVmType, utils.GetRegion(), tagsValue, keypair, sgName),
@@ -658,33 +658,35 @@ func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *osc.Vm) resourc
 	}
 }
 
-func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSC
+func testAccCheckOutscaleVMDestroy(ctx context.Context) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_vm" {
-			continue
-		}
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "outscale_vm" {
+				continue
+			}
 
-		resp, err := client.ReadVms(context.Background(), osc.ReadVmsRequest{
-			Filters: getVMsFilterByVMID(rs.Primary.ID),
-		}, options.WithRetryTimeout(DefaultTimeout))
-		if err != nil {
+			resp, err := client.ReadVms(ctx, osc.ReadVmsRequest{
+				Filters: getVMsFilterByVMID(rs.Primary.ID),
+			}, options.WithRetryTimeout(DefaultTimeout))
+			if err != nil {
+				return err
+			}
+			for _, i := range ptr.From(resp.Vms) {
+				if i.State != "" && i.State != "terminated" {
+					return fmt.Errorf("found running instance: %s", i.VmId)
+				}
+			}
+
+			// Verify the error is what we want
 			return err
 		}
-		for _, i := range ptr.From(resp.Vms) {
-			if i.State != "" && i.State != "terminated" {
-				return fmt.Errorf("found running instance: %s", i.VmId)
-			}
-		}
-
-		// Verify the error is what we want
-		return err
+		return nil
 	}
-	return nil
 }
 
-func testAccCheckOutscaleVMExists(n string, i *osc.Vm) resource.TestCheckFunc {
+func testAccCheckOutscaleVMExists(ctx context.Context, n string, i *osc.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -695,7 +697,7 @@ func testAccCheckOutscaleVMExists(n string, i *osc.Vm) resource.TestCheckFunc {
 			return fmt.Errorf("no id is set")
 		}
 		client := testacc.ConfiguredClient.OSC
-		resp, err := client.ReadVms(context.Background(), osc.ReadVmsRequest{
+		resp, err := client.ReadVms(ctx, osc.ReadVmsRequest{
 			Filters: getVMsFilterByVMID(rs.Primary.ID),
 		}, options.WithRetryTimeout(DefaultTimeout))
 		if err != nil {

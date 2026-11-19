@@ -26,7 +26,7 @@ func TestAccOthers_Image_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOAPIImageDestroy,
+		CheckDestroy:             testAccCheckOAPIImageDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIImageConfigBasic(omi, testAccVmType, region, rInt, sgName),
@@ -57,7 +57,7 @@ func TestAccOthers_Image_CreateFailureKeepsState(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOAPIImageDestroy,
+		CheckDestroy:             testAccCheckOAPIImageDestroy(t.Context()),
 		Steps: testacc.CreateFailureReplacementSteps(
 			resourceName,
 			testAccOAPIImageConfigWithTag(omi, testAccVmType, region, rInt, sgName, invalidTagKey, tagValue),
@@ -70,24 +70,26 @@ func TestAccOthers_Image_CreateFailureKeepsState(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIImageDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSC
+func testAccCheckOAPIImageDestroy(ctx context.Context) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_image" {
-			continue
-		}
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "outscale_image" {
+				continue
+			}
 
-		filterReq := osc.ReadImagesRequest{
-			Filters: &osc.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
-		}
-		resp, err := client.ReadImages(context.Background(), filterReq, options.WithRetryTimeout(DefaultTimeout))
+			filterReq := osc.ReadImagesRequest{
+				Filters: &osc.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
+			}
+			resp, err := client.ReadImages(ctx, filterReq, options.WithRetryTimeout(DefaultTimeout))
 
-		if err != nil || resp.Images == nil || len(*resp.Images) > 0 {
-			return fmt.Errorf("image still exists (%s)", rs.Primary.ID)
+			if err != nil || resp.Images == nil || len(*resp.Images) > 0 {
+				return fmt.Errorf("image still exists (%s)", rs.Primary.ID)
+			}
 		}
+		return nil
 	}
-	return nil
 }
 
 func testAccCheckOAPIImageExists(ctx context.Context, n string, ami *osc.Image) resource.TestCheckFunc {

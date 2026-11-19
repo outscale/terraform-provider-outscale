@@ -20,7 +20,7 @@ func TestAccOthers_DataOutscaleApiAccessRule_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccDataCheckOutscaleApiAccessRuleDestroy,
+		CheckDestroy:             testAccDataCheckOutscaleApiAccessRuleDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataOutscaleApiAccessRuleConfig(ca_path),
@@ -32,33 +32,35 @@ func TestAccOthers_DataOutscaleApiAccessRule_basic(t *testing.T) {
 	})
 }
 
-func testAccDataCheckOutscaleApiAccessRuleDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSC
+func testAccDataCheckOutscaleApiAccessRuleDestroy(ctx context.Context) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_api_access_rule" {
-			continue
-		}
-		req := osc.ReadApiAccessRulesRequest{
-			Filters: &osc.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
-		}
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "outscale_api_access_rule" {
+				continue
+			}
+			req := osc.ReadApiAccessRulesRequest{
+				Filters: &osc.FiltersApiAccessRule{ApiAccessRuleIds: &[]string{rs.Primary.ID}},
+			}
 
-		exists := false
-		resp, err := client.ReadApiAccessRules(context.Background(), req, options.WithRetryTimeout(120*time.Second))
-		if err != nil {
-			return fmt.Errorf("api access rule reading (%s)", rs.Primary.ID)
-		}
+			exists := false
+			resp, err := client.ReadApiAccessRules(ctx, req, options.WithRetryTimeout(120*time.Second))
+			if err != nil {
+				return fmt.Errorf("api access rule reading (%s)", rs.Primary.ID)
+			}
 
-		for _, r := range ptr.From(resp.ApiAccessRules) {
-			if *r.ApiAccessRuleId == rs.Primary.ID {
-				exists = true
+			for _, r := range ptr.From(resp.ApiAccessRules) {
+				if *r.ApiAccessRuleId == rs.Primary.ID {
+					exists = true
+				}
+			}
+			if exists {
+				return fmt.Errorf("api access rule still exists (%s)", rs.Primary.ID)
 			}
 		}
-		if exists {
-			return fmt.Errorf("api access rule still exists (%s)", rs.Primary.ID)
-		}
+		return nil
 	}
-	return nil
 }
 
 func testAccDataOutscaleApiAccessRuleConfig(path string) string {

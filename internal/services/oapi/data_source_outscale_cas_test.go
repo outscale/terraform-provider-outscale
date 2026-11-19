@@ -20,12 +20,12 @@ func TestAccOthers_DataOutscaleCas_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccDataCheckOutscaleCasDestroy,
+		CheckDestroy:             testAccDataCheckOutscaleCasDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataOutscaleCasConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleCaExists(resName),
+					testAccCheckOutscaleCaExists(t.Context(), resName),
 				),
 			},
 			{
@@ -35,35 +35,37 @@ func TestAccOthers_DataOutscaleCas_basic(t *testing.T) {
 	})
 }
 
-func testAccDataCheckOutscaleCasDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSC
+func testAccDataCheckOutscaleCasDestroy(ctx context.Context) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_ca" {
-			continue
-		}
-		req := osc.ReadCasRequest{}
-		req.Filters = &osc.FiltersCa{
-			CaIds: &[]string{rs.Primary.ID},
-		}
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "outscale_ca" {
+				continue
+			}
+			req := osc.ReadCasRequest{}
+			req.Filters = &osc.FiltersCa{
+				CaIds: &[]string{rs.Primary.ID},
+			}
 
-		exists := false
-		resp, err := client.ReadCas(context.Background(), req, options.WithRetryTimeout(120*time.Second))
-		if err != nil {
-			return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
-		}
+			exists := false
+			resp, err := client.ReadCas(ctx, req, options.WithRetryTimeout(120*time.Second))
+			if err != nil {
+				return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
+			}
 
-		for _, ca := range ptr.From(resp.Cas) {
-			if *ca.CaId == rs.Primary.ID {
-				exists = true
+			for _, ca := range ptr.From(resp.Cas) {
+				if *ca.CaId == rs.Primary.ID {
+					exists = true
+				}
+			}
+
+			if exists {
+				return fmt.Errorf("ca still exists (%s)", rs.Primary.ID)
 			}
 		}
-
-		if exists {
-			return fmt.Errorf("ca still exists (%s)", rs.Primary.ID)
-		}
+		return nil
 	}
-	return nil
 }
 
 func testAccDataOutscaleCasConfig(path string) string {
