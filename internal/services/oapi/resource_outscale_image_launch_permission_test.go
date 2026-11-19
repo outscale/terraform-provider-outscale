@@ -39,7 +39,7 @@ func TestAccVM_WithImageLaunchPermission_Basic(t *testing.T) {
 			{
 				Config: testAccOutscaleImageLaunchPermissionConfig(omi, testAccVmType, region, accountID, keypair, false, rInt, sgName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleImageLaunchPermissionDestroyed(accountID, &imageID),
+					testAccOutscaleImageLaunchPermissionDestroyed(t.Context(), accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
@@ -71,7 +71,7 @@ func TestAccVM_ImageLaunchPermissionDestruction_Basic(t *testing.T) {
 				Config: testAccOutscaleImageLaunchPermissionCreateConfig(omi, testAccVmType, region, keypair, rInt, true, false, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
-					testAccOutscaleImageLaunchPermissionExists(accountID, &imageID),
+					testAccOutscaleImageLaunchPermissionExists(t.Context(), accountID, &imageID),
 				),
 			},
 			{
@@ -102,10 +102,10 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) resource.T
 	}
 }
 
-func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *string) resource.TestCheckFunc {
+func testAccOutscaleImageLaunchPermissionExists(ctx context.Context, accountID string, imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testacc.ConfiguredClient.OSC
-		if has, err := oapihelpers.ImageHasLaunchPermission(context.Background(), client, DefaultTimeout, *imageID); err != nil {
+		if has, err := oapihelpers.ImageHasLaunchPermission(ctx, client, DefaultTimeout, *imageID); err != nil {
 			return err
 		} else if !has {
 			return fmt.Errorf("launch permission does not exist for '%s' on '%s'", accountID, *imageID)
@@ -114,10 +114,10 @@ func testAccOutscaleImageLaunchPermissionExists(accountID string, imageID *strin
 	}
 }
 
-func testAccOutscaleImageLaunchPermissionDestroyed(accountID string, imageID *string) resource.TestCheckFunc {
+func testAccOutscaleImageLaunchPermissionDestroyed(ctx context.Context, accountID string, imageID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testacc.ConfiguredClient.OSC
-		if has, err := oapihelpers.ImageHasLaunchPermission(context.Background(), client, DefaultTimeout, *imageID); err != nil {
+		if has, err := oapihelpers.ImageHasLaunchPermission(ctx, client, DefaultTimeout, *imageID); err != nil {
 			return err
 		} else if has {
 			return fmt.Errorf("launch permission still exists for '%s' on '%s'", accountID, *imageID)

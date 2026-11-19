@@ -29,7 +29,7 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 			{
 				Config: testAccDSOutscaleLBUConfig(zone, suffix),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleLBUExists("outscale_load_balancer.dataLb", &conf),
+					testAccCheckOutscaleLBUExists(t.Context(), "outscale_load_balancer.dataLb", &conf),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer.dataTest", "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -41,7 +41,7 @@ func TestAccOthers_LBU_basic(t *testing.T) {
 }
 
 // Legacy helper, will be removed once the datasource is migrated to the Plugin Framework
-func testAccCheckOutscaleLBUExists(n string, res *osc.LoadBalancer) resource.TestCheckFunc {
+func testAccCheckOutscaleLBUExists(ctx context.Context, n string, res *osc.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -62,7 +62,7 @@ func testAccCheckOutscaleLBUExists(n string, res *osc.LoadBalancer) resource.Tes
 			},
 		}
 
-		resp, err := client.ReadLoadBalancers(context.Background(), req, options.WithRetryTimeout(DefaultTimeout))
+		resp, err := client.ReadLoadBalancers(ctx, req, options.WithRetryTimeout(DefaultTimeout))
 		if err != nil {
 			return err
 		}

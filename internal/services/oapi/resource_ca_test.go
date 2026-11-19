@@ -18,18 +18,18 @@ func TestAccOthers_Ca_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
-		CheckDestroy:             testAccCheckOutscaleCaDestroy,
+		CheckDestroy:             testAccCheckOutscaleCaDestroy(t.Context()),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleCaConfig(ca_path),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleCaExists(resourceName),
+					testAccCheckOutscaleCaExists(t.Context(), resourceName),
 				),
 			},
 			{
 				Config: testAccOutscaleCaConfigUpdateDescription(ca_path),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleCaExists(resourceName),
+					testAccCheckOutscaleCaExists(t.Context(), resourceName),
 				),
 			},
 			testacc.ImportStep(resourceName, append(testacc.DefaultIgnores(), "ca_pem")...),
@@ -43,7 +43,7 @@ func TestAccOthers_Ca_Migration(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleCaExists(ctx context.Context, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -57,7 +57,7 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 		}
 
 		exists := false
-		resp, err := client.ReadCas(context.Background(), osc.ReadCasRequest{}, options.WithRetryTimeout(DefaultTimeout))
+		resp, err := client.ReadCas(ctx, osc.ReadCasRequest{}, options.WithRetryTimeout(DefaultTimeout))
 
 		if err != nil || resp.Cas == nil || len(*resp.Cas) == 0 {
 			return fmt.Errorf("ca not found (%s)", rs.Primary.ID)
@@ -77,35 +77,37 @@ func testAccCheckOutscaleCaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckOutscaleCaDestroy(s *terraform.State) error {
-	client := testacc.ConfiguredClient.OSC
+func testAccCheckOutscaleCaDestroy(ctx context.Context) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client := testacc.ConfiguredClient.OSC
 
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_ca" {
-			continue
-		}
-		req := osc.ReadCasRequest{}
-		req.Filters = &osc.FiltersCa{
-			CaIds: &[]string{rs.Primary.ID},
-		}
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "outscale_ca" {
+				continue
+			}
+			req := osc.ReadCasRequest{}
+			req.Filters = &osc.FiltersCa{
+				CaIds: &[]string{rs.Primary.ID},
+			}
 
-		exists := false
-		resp, err := client.ReadCas(context.Background(), req, options.WithRetryTimeout(DefaultTimeout))
-		if err != nil {
-			return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
-		}
+			exists := false
+			resp, err := client.ReadCas(ctx, req, options.WithRetryTimeout(DefaultTimeout))
+			if err != nil {
+				return fmt.Errorf("ca reading (%s)", rs.Primary.ID)
+			}
 
-		for _, ca := range *resp.Cas {
-			if *ca.CaId == rs.Primary.ID {
-				exists = true
+			for _, ca := range *resp.Cas {
+				if *ca.CaId == rs.Primary.ID {
+					exists = true
+				}
+			}
+
+			if exists {
+				return fmt.Errorf("ca still exists (%s)", rs.Primary.ID)
 			}
 		}
-
-		if exists {
-			return fmt.Errorf("ca still exists (%s)", rs.Primary.ID)
-		}
+		return nil
 	}
-	return nil
 }
 
 func testAccOutscaleCaConfig(path string) string {
