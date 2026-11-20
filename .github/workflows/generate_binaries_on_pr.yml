@@ -20,20 +20,20 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              uses: actions/checkout@v7.0.1
               with:
                   fetch-depth: 0
             - name: Set up Go
-              uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+              uses: actions/setup-go@v7.0.0
               with:
                   go-version-file: "./go.mod"
             - name: Run GoReleaser
-              uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+              uses: goreleaser/goreleaser-action@v7.2.2
               with:
                   version: latest
                   args: build --clean --snapshot
             - name: Upload assets
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@v7.0.1
               with:
                   name: terraform-provider-outscale
                   path: dist/terraform-provider-outscale*

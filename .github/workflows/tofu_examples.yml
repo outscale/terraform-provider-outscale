@@ -21,12 +21,12 @@ jobs:
     examples-tofu-tests:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-            - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+            - uses: actions/checkout@v7.0.1
+            - uses: actions/setup-go@v7.0.0
               with:
                   go-version-file: "./go.mod"
             - name: Setup OpenTofu
-              uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+              uses: opentofu/setup-opentofu@v2.0.2
               with:
                   tofu_wrapper: false
             - name: Run Examples

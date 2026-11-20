@@ -24,25 +24,25 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              uses: actions/checkout@v7.0.1
 
             - name: Set up Go
-              uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+              uses: actions/setup-go@v7.0.0
               with:
                   go-version-file: "./go.mod"
 
             - name: Import GPG key
               id: import_gpg
-              uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+              uses: crazy-max/ghaction-import-gpg@v7.0.0
               with:
                   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
                   PASSPHRASE: ${{ secrets.PASSPHRASE }}
 
             - name: Install syft
-              uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+              uses: anchore/sbom-action/download-syft@v0.24.2
 
             - name: Run GoReleaser
-              uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+              uses: goreleaser/goreleaser-action@v7.2.2
               with:
                   version: latest
                   args: release --clean

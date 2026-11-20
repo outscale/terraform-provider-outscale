@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: ⬇️ Checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Plumber
-      uses: outscale/.github/pipeline-compliance@dfa747ea77f97fdc5a0bf745e4933a8d68631f89 # v1.1.2
+      uses: outscale/.github/pipeline-compliance@v1.1.2
       with:
         plumber-threshold: 93
         github-token: ${{ secrets.PLUMBER_TOKEN }}
