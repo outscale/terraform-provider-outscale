@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/outscale/terraform-provider-outscale/internal/testacc"
 )
 
@@ -94,7 +95,6 @@ func TestAccOKSManifest_Basic(t *testing.T) {
 				Config:  clusterConfig(projectName, clusterName) + manifestConfigWithLifecycle("nodepool", "pool-2"),
 				Destroy: true,
 			},
-			// testacc.ImportStep(resourceName, "kubeconfig", "request_id"),
 		},
 	})
 }
@@ -113,6 +113,8 @@ func TestAccOKSManifest_ConfigMapNamespace(t *testing.T) {
 				Config: cluster + configMapManifestConfig(configMapName, namespaceName, ""),
 				Check:  resource.TestCheckResourceAttrSet(resourceName, "object"),
 			},
+			testacc.ImportStepWithStateIdFunc("outscale_oks_manifest.configmap_namespace", manifestImportStateIDFunc("outscale_oks_manifest.configmap_namespace", "v1,Namespace,"+namespaceName), "manifest", "field_manager"),
+			testacc.ImportStepWithStateIdFunc(resourceName, manifestImportStateIDFunc(resourceName, "v1,ConfigMap,"+configMapName), "manifest", "field_manager"),
 			{
 				// Adding an explicit default namespace must not replace the resource
 				Config: cluster + configMapManifestConfig(configMapName, namespaceName, "default"),
@@ -123,6 +125,7 @@ func TestAccOKSManifest_ConfigMapNamespace(t *testing.T) {
 				},
 				Check: resource.TestCheckResourceAttrSet(resourceName, "object"),
 			},
+			testacc.ImportStepWithStateIdFunc(resourceName, manifestImportStateIDFunc(resourceName, "v1,ConfigMap,"+configMapName+",default"), "manifest", "field_manager"),
 			{
 				// Changing to another namespace must replace the resource
 				Config: cluster + configMapManifestConfig(configMapName, namespaceName, namespaceName),
@@ -133,8 +136,73 @@ func TestAccOKSManifest_ConfigMapNamespace(t *testing.T) {
 				},
 				Check: resource.TestCheckResourceAttrSet(resourceName, "object"),
 			},
+			testacc.ImportStepWithStateIdFunc(resourceName, manifestImportStateIDFunc(resourceName, "v1,ConfigMap,"+configMapName+","+namespaceName), "manifest", "field_manager"),
 		},
 	})
+}
+
+func TestAccOKSManifest_FieldManager(t *testing.T) {
+	projectName := acctest.RandomWithPrefix("test-acc-project")
+	clusterName := acctest.RandomWithPrefix("test-acc-cluster")
+	configMapName := acctest.RandomWithPrefix("test-acc-field-manager")
+	resourceName := "outscale_oks_manifest.field_manager"
+	manager := "test-acc-field-manager"
+	managerConfig := fmt.Sprintf("field_manager = { name = %q }", manager)
+	forceConfig := fmt.Sprintf("field_manager = {\n name = %q\n force_conflicts = true\n}", manager)
+	cluster := clusterConfig(projectName, clusterName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testacc.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: cluster + fieldManagerManifestConfig(configMapName, "initial", ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "object"),
+				),
+			},
+			{
+				Config: cluster + fieldManagerManifestConfig(configMapName, "initial", managerConfig),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(resourceName, "object", regexp.MustCompile("manager: "+manager)),
+				),
+			},
+			{
+				Config: cluster + fieldManagerManifestConfig(configMapName, "updated", forceConfig),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "field_manager.force_conflicts", "true"),
+				),
+			},
+			testacc.ImportStepWithStateIdFunc(resourceName, manifestImportStateIDFunc(resourceName, "v1,ConfigMap,"+configMapName), "manifest", "field_manager"),
+		},
+	})
+}
+
+func fieldManagerManifestConfig(name, value, fieldManager string) string {
+	return fmt.Sprintf(`
+resource "outscale_oks_manifest" "field_manager" {
+  cluster_id = outscale_oks_cluster.cluster.id
+  %s
+  manifest = <<-YAML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: %s
+  namespace: default
+data:
+  key: %s
+YAML
+}
+`, fieldManager, name, value)
+}
+
+func manifestImportStateIDFunc(resourceName, identifier string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", resourceName)
+		}
+		return rs.Primary.Attributes["cluster_id"] + "," + identifier, nil
+	}
 }
 
 func configMapManifestConfig(name, namespaceName, namespace string) string {

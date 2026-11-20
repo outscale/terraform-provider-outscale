@@ -18,16 +18,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/outscale/osc-sdk-go/v3/pkg/oks"
 	"github.com/outscale/terraform-provider-outscale/internal/client"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers"
+	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/from"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/fwhelpers/to"
 	"github.com/outscale/terraform-provider-outscale/internal/framework/validators/validatorstring"
 	"github.com/outscale/terraform-provider-outscale/internal/services/oks/okshelpers"
+	"github.com/samber/lo"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -40,9 +44,10 @@ import (
 )
 
 var (
-	_ resource.Resource               = &manifestResource{}
-	_ resource.ResourceWithConfigure  = &manifestResource{}
-	_ resource.ResourceWithModifyPlan = &manifestResource{}
+	_ resource.Resource                = &manifestResource{}
+	_ resource.ResourceWithConfigure   = &manifestResource{}
+	_ resource.ResourceWithModifyPlan  = &manifestResource{}
+	_ resource.ResourceWithImportState = &manifestResource{}
 )
 
 const (
@@ -76,14 +81,20 @@ type manifestResource struct {
 }
 
 type manifestModel struct {
-	ClusterId  types.String   `tfsdk:"cluster_id"`
-	Manifest   types.String   `tfsdk:"manifest"`
-	Object     types.String   `tfsdk:"object"`
-	SkipDelete types.Bool     `tfsdk:"skip_delete"`
-	Wait       types.Bool     `tfsdk:"wait"`
-	WaitFor    types.Object   `tfsdk:"wait_for"`
-	Id         types.String   `tfsdk:"id"`
-	Timeouts   timeouts.Value `tfsdk:"timeouts"`
+	ClusterId    types.String   `tfsdk:"cluster_id"`
+	Manifest     types.String   `tfsdk:"manifest"`
+	Object       types.String   `tfsdk:"object"`
+	SkipDelete   types.Bool     `tfsdk:"skip_delete"`
+	Wait         types.Bool     `tfsdk:"wait"`
+	WaitFor      types.Object   `tfsdk:"wait_for"`
+	FieldManager types.Object   `tfsdk:"field_manager"`
+	Id           types.String   `tfsdk:"id"`
+	Timeouts     timeouts.Value `tfsdk:"timeouts"`
+}
+
+type manifestFieldManagerModel struct {
+	Name           types.String `tfsdk:"name"`
+	ForceConflicts types.Bool   `tfsdk:"force_conflicts"`
 }
 
 type manifestWaitForModel struct {
@@ -110,6 +121,47 @@ func (r *manifestResource) Configure(_ context.Context, req resource.ConfigureRe
 	}
 
 	r.Client = client.OKS
+}
+
+func (r *manifestResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	ids := strings.Split(req.ID, ",")
+	if len(ids) < 4 || len(ids) > 5 {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected identifier in the format <cluster_id>,<api_version>,<kind>,<name>[,<namespace>]. Got: %q", req.ID),
+		)
+		return
+	}
+	ids = lo.Map(ids, func(id string, _ int) string {
+		new := strings.TrimSpace(id)
+		if new == "" {
+			resp.Diagnostics.AddError("Unexpected Import Identifier", "The import identifier values must not be empty.")
+		}
+
+		return new
+	})
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	idObj := &unstructured.Unstructured{}
+	idObj.SetAPIVersion(ids[1])
+	idObj.SetKind(ids[2])
+	idObj.SetName(ids[3])
+	if len(ids) == 5 {
+		idObj.SetNamespace(ids[4])
+	}
+
+	manifest, err := okshelpers.ToYAML(idObj.Object)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import ID", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("cluster_id"), ids[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("manifest"), manifest)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("skip_delete"), false)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("wait"), false)...)
 }
 
 func (r *manifestResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -199,18 +251,32 @@ func (r *manifestResource) ModifyPlan(ctx context.Context, req resource.ModifyPl
 	}
 
 	// validate the manifest using a dry-run patch apply
+	fieldManager, diag := to.Model[manifestFieldManagerModel](ctx, plan.FieldManager)
+	if fwhelpers.CheckDiags(resp, diag) {
+		return
+	}
+
 	patchOptions := metav1.PatchOptions{
-		FieldManager: manifestFieldManager,
+		FieldManager: fieldManager.Name.ValueString(),
+		Force:        fieldManager.ForceConflicts.ValueBoolPointer(),
 		DryRun:       []string{metav1.DryRunAll},
 	}
 	_, err = planManifest.DRI.Patch(ctx, planManifest.Object.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
-	if err != nil {
+	switch {
+	case k8serrors.IsConflict(err):
+		resp.Diagnostics.AddError("Dry-run validation failed", err.Error()+"\n\nSet \"field_manager.force_conflicts = true\" to overwrite conflicting field values and take ownership, or update the manifest to match the existing values.")
+	case err != nil:
 		resp.Diagnostics.AddError("Dry-run validation failed", err.Error())
-		return
 	}
 }
 
 func (r *manifestResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	defaultFieldManager, diags := to.Object(ctx, manifestFieldManagerModel{
+		Name:           to.String(manifestFieldManager),
+		ForceConflicts: to.Bool(false),
+	})
+	resp.Diagnostics.Append(diags...)
+
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
@@ -229,6 +295,26 @@ func (r *manifestResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			},
 			"manifest": schema.StringAttribute{
 				Required: true,
+			},
+			"field_manager": schema.SingleNestedAttribute{
+				Optional: true,
+				Computed: true,
+				Default:  objectdefault.StaticValue(defaultFieldManager),
+				Attributes: map[string]schema.Attribute{
+					"name": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						Default:  stringdefault.StaticString(manifestFieldManager),
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"force_conflicts": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						Default:  booldefault.StaticBool(false),
+					},
+				},
 			},
 			"object": schema.StringAttribute{
 				Computed: true,
@@ -383,7 +469,7 @@ func (r *manifestResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	if fwhelpers.HasChange(plan.Manifest, state.Manifest) {
+	if fwhelpers.HasChange(plan.Manifest, state.Manifest) || fwhelpers.HasChange(plan.FieldManager, state.FieldManager) {
 		_, err := r.applyManifest(ctx, &plan, resource.Object, resource.DRI)
 		if err != nil {
 			resp.Diagnostics.AddError(manifestErrUpdate, err.Error())
@@ -479,7 +565,15 @@ func (r *manifestResource) applyManifest(ctx context.Context, data *manifestMode
 		return nil, err
 	}
 
-	patchOptions := metav1.PatchOptions{FieldManager: manifestFieldManager}
+	fieldManager, diags := to.Model[manifestFieldManagerModel](ctx, data.FieldManager)
+	if diags.HasError() {
+		return nil, from.Diag(diags)
+	}
+
+	patchOptions := metav1.PatchOptions{
+		FieldManager: fieldManager.Name.ValueString(),
+		Force:        fieldManager.ForceConflicts.ValueBoolPointer(),
+	}
 	resp, err := dri.Patch(ctx, obj.GetName(), k8stypes.ApplyPatchType, jsonBytes, patchOptions)
 	if err != nil {
 		return nil, fmt.Errorf("apply manifest: %w", err)
