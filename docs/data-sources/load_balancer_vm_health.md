@@ -12,7 +12,7 @@ description: |-
 Provides information about the health of one or more backend VMs registered with a specific load balancer.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readvmshealth).
+For more information on this resource actions, see the [ReadVmsHealth](https://docs.outscale.com/api#readvmshealth) API method.
 
 ## Example Usage
 

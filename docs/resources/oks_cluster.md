@@ -12,7 +12,7 @@ description: |-
 Manages a cluster.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OKS.html#_clusters).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/oks.html#oks-api-clusters).
+For more information on this resource actions, see the [Clusters](https://docs.outscale.com/oks.html#oks-api-clusters) API methods.
 
 ## Example Usage
 

@@ -12,7 +12,7 @@ description: |-
 Manages a pre-signed URL.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Creating-a-Pre-Signed-URL.html).
+For more information on this resource actions, see the [aws s3 presign](https://docs.outscale.com/en/userguide/Creating-a-Pre-Signed-URL.html) command.
 
 ## Example Usage
 

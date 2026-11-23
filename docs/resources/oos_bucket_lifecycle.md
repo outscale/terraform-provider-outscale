@@ -14,7 +14,7 @@ Manages a bucket lifecycle configuration.
 ~> **Important** The deletion of expired objects via lifecycle configuration is asynchronous. This means a delay is to be expected between when the object is marked as expired and when it is effectively removed from the bucket. The actual removal process happens in the background and is managed by OUTSCALE Object Storage (OOS). You are no longer charged for storing objects once they have expired.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Managing-the-Lifecycle-of-Your-Buckets.html).
+For more information on this resource actions, see the [BucketLifecycle](https://docs.outscale.com/en/userguide/Managing-the-Lifecycle-of-Your-Buckets.html) API methods.
 
 ## Example Usage
 

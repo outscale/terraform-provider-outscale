@@ -12,7 +12,7 @@ description: |-
 Manages an object retention configuration (also known as specific object lock).
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Configuring-a-Specific-Object-Lock-on-an-Object.html).
+For more information on this resource actions, see the [ObjectRetention](https://docs.outscale.com/en/userguide/Configuring-a-Specific-Object-Lock-on-an-Object.html) API methods.
 
 ## Example Usage
 

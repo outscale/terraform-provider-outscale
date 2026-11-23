@@ -11,7 +11,7 @@ description: |-
 
 Provides information about the YAML manifest templates provided by the OKS API to create Custom Resource Definitions (CRDs).
 
-For more information on the templates, see the [API documentation](https://docs.outscale.com/oks.html#oks-api-templates).
+For more information on the templates, see the [Templates](https://docs.outscale.com/oks.html#oks-api-templates) API method.
 
 ## Example Usage
 

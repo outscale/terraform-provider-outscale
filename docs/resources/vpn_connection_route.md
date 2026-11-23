@@ -12,7 +12,7 @@ description: |-
 Manages a VPN connection route.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Routing-Configuration-for-VPN-Connections.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vpnconnection).
+For more information on this resource actions, see the [VpnConnection](https://docs.outscale.com/api#3ds-outscale-api-vpnconnection) API methods.
 
 ## Example Usage
 

@@ -12,7 +12,7 @@ description: |-
 Provides information about product types.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Software-Licenses.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-producttype).
+For more information on this resource actions, see the [ProductType](https://docs.outscale.com/api#3ds-outscale-api-producttype) API methods.
 
 ## Example Usage
 

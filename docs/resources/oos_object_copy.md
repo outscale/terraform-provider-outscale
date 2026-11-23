@@ -12,7 +12,7 @@ description: |-
 Manages an object copy.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Copying-an-Object-to-a-Bucket.html).
+For more information on this resource actions, see the [CopyObject](https://docs.outscale.com/en/userguide/Copying-an-Object-to-a-Bucket.html) API method.
 
 ## Example Usage
 

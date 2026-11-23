@@ -12,7 +12,7 @@ description: |-
 Provides information about OKS quotas.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Getting-Information-About-the-Quotas-of-a-Profile.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/oks.html#getquotas).
+For more information on this resource actions, see the [GetQuotas](https://docs.outscale.com/oks.html#getquotas) API method.
 
 ## Example Usage
 

@@ -12,7 +12,7 @@ description: |-
 Manages a bucket CORS (cross-origin resource sharing) configuration.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Managing-CORS-on-Your-Buckets.html).
+For more information on this resource actions, see the [BucketCors](https://docs.outscale.com/en/userguide/Managing-CORS-on-Your-Buckets.html) API methods.
 
 ## Example Usage
 
