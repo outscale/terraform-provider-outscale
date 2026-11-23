@@ -12,7 +12,7 @@ description: |-
 Manages a project.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-OKS.html#_projects).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/oks.html#oks-api-projects).
+For more information on this resource actions, see the [Projects](https://docs.outscale.com/oks.html#oks-api-projects) API methods.
 
 ## Example Usage
 

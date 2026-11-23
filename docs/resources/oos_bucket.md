@@ -12,7 +12,7 @@ description: |-
 Manages a bucket.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Managing-Your-Buckets.html).
+For more information on this resource actions, see the [Bucket](https://docs.outscale.com/en/userguide/Managing-Your-Buckets.html) API methods.
 
 ## Example Usage
 

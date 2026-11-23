@@ -12,7 +12,7 @@ description: |-
 Manages a bucket policy.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/Introduction-to-OOS.html).  
-For more information on this resource actions, see this [User Guide's section](https://docs.outscale.com/en/userguide/Managing-a-Bucket-Policy.html).
+For more information on this resource actions, see the [BucketPolicy](https://docs.outscale.com/en/userguide/Managing-a-Bucket-Policy.html) API methods.
 
 ## Example Usage
 

@@ -12,7 +12,7 @@ description: |-
 Manages the attributes of a Net.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-DHCP-Options.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#updatenet).
+For more information on this resource actions, see the [UpdateNet](https://docs.outscale.com/api#updatenet) API method.
 
 ## Example Usage
 

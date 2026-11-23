@@ -12,7 +12,7 @@ description: |-
 Manages snapshot attributes.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Snapshots.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#updatesnapshot).
+For more information on this resource actions, see the [UpdateSnapshot](https://docs.outscale.com/api#updatesnapshot) API method.
 
 ## Example Usage
 

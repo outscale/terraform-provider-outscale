@@ -12,7 +12,7 @@ description: |-
 Manages a load balancer policy.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-loadbalancerpolicy).
+For more information on this resource actions, see the [LoadBalancerPolicy](https://docs.outscale.com/api#3ds-outscale-api-loadbalancerpolicy) API methods.
 
 ## Example Usage
 

@@ -16,7 +16,7 @@ To activate a trusted session, first you must:
 * Specify a Certificate Authority (CA) in all your API access rules.
 
 For more information on this resource, see the [User Guide](https://docs.outscale.com/en/userguide/About-Your-API-Access-Policy.html).  
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-apiaccesspolicy).
+For more information on this resource actions, see the [ApiAccessPolicy](https://docs.outscale.com/api#3ds-outscale-api-apiaccesspolicy) API methods.
 
 ## Example Usage
 
