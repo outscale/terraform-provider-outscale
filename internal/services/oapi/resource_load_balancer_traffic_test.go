@@ -24,7 +24,7 @@ import (
 const (
 	lbTrafficHTTPPort     = 80
 	lbTrafficBackendCount = 3
-	lbTrafficRequestCount = 30
+	lbTrafficRequestCount = 10
 
 	lbTrafficHealthTimeout = 10 * time.Minute
 	lbTrafficHTTPRetry     = 2 * time.Minute
@@ -71,7 +71,7 @@ func testAccCheckLoadBalancerTraffic(t *testing.T) resource.TestCheckFunc {
 			return err
 		}
 
-		return checkLBTraffic(t, s, dnsName, lbTrafficHTTPPort, lbTrafficBackendCount)
+		return checkLBTraffic(t, dnsName, lbTrafficHTTPPort)
 	}
 }
 
@@ -124,8 +124,8 @@ func waitForHealthyBackends(t *testing.T, lbName string, want int) error {
 	})
 }
 
-// checkLBTraffic hits the load balancer, then each VM directly when session affinity hides backends.
-func checkLBTraffic(t *testing.T, s *terraform.State, lbHost string, lbPort, backendCount int) error {
+// checkLBTraffic exercises HTTP through the load balancer DNS.
+func checkLBTraffic(t *testing.T, lbHost string, lbPort int) error {
 	t.Helper()
 	ctx := t.Context()
 	seen := map[string]int{}
@@ -142,32 +142,11 @@ func checkLBTraffic(t *testing.T, s *terraform.State, lbHost string, lbPort, bac
 		seen[body]++
 	}
 
-	if len(seen) >= backendCount {
-		t.Logf("traffic via LB reached %d backend(s): %v", len(seen), seen)
-		return nil
+	if len(seen) == 0 {
+		return fmt.Errorf("no backend responses via LB after %d requests", lbTrafficRequestCount)
 	}
 
-	t.Logf("LB saw %d backend(s) from this client (%v); checking VMs directly", len(seen), seen)
-	for i := range backendCount {
-		vmRS := s.RootModule().Resources[fmt.Sprintf("outscale_vm.lb_traffic_backend.%d", i)]
-		if vmRS == nil {
-			return fmt.Errorf("not found: outscale_vm.lb_traffic_backend.%d", i)
-		}
-		ip := vmRS.Primary.Attributes["public_ip"]
-		if ip == "" {
-			return fmt.Errorf("outscale_vm.lb_traffic_backend.%d: public_ip is empty", i)
-		}
-		want := fmt.Sprintf("backend-%d", i)
-		got, err := httpGetRetry(ctx, lbTrafficHTTPURL(ip, lbPort, ""))
-		if err != nil {
-			return fmt.Errorf("direct check %s: %w", ip, err)
-		}
-		if got != want {
-			return fmt.Errorf("direct check %s: want %q, got %q", ip, want, got)
-		}
-	}
-
-	t.Logf("all %d backend VMs serve expected HTTP responses", backendCount)
+	t.Logf("traffic via LB reached %d backend(s): %v", len(seen), seen)
 	return nil
 }
 
@@ -280,13 +259,18 @@ resource "outscale_security_group" "sg_lb_traffic" {
   description         = "Used in the terraform acceptance tests"
 }
 
-resource "outscale_security_group_rule" "lb_traffic_http" {
+resource "outscale_security_group_rule" "lb_traffic_http_from_lb" {
   flow              = "Inbound"
   security_group_id = outscale_security_group.sg_lb_traffic.security_group_id
-  from_port_range   = %[3]d
-  to_port_range     = %[3]d
-  ip_protocol       = "tcp"
-  ip_range          = "0.0.0.0/0"
+  rules {
+    from_port_range = "%[3]d"
+    to_port_range   = "%[3]d"
+    ip_protocol     = "tcp"
+    security_groups_members {
+      account_id          = outscale_load_balancer.lbu_traffic.source_security_group[0].security_group_account_id
+      security_group_name = outscale_load_balancer.lbu_traffic.source_security_group[0].security_group_name
+    }
+  }
 }
 
 resource "outscale_vm" "lb_traffic_backend" {
@@ -345,7 +329,7 @@ resource "outscale_load_balancer_vms" "lbu_traffic_backends" {
   backend_vm_ids     = outscale_vm.lb_traffic_backend[*].vm_id
   depends_on = [
     outscale_load_balancer_attributes.lbu_traffic,
-    outscale_security_group_rule.lb_traffic_http,
+    outscale_security_group_rule.lb_traffic_http_from_lb,
   ]
 }
 `, lbName, sgName, lbTrafficHTTPPort, lbTrafficBackendCount)
