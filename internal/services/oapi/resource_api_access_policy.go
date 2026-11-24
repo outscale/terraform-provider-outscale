@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -35,6 +36,7 @@ const (
 type apiAccessPolicyModel struct {
 	MaxAccessKeyExpirationSeconds types.Int64    `tfsdk:"max_access_key_expiration_seconds"`
 	RequireTrustedEnv             types.Bool     `tfsdk:"require_trusted_env"`
+	RequireTrustedEnvSecureMode   types.Bool     `tfsdk:"require_trusted_env_secure_mode"`
 	Id                            types.String   `tfsdk:"id"`
 	Timeouts                      timeouts.Value `tfsdk:"timeouts"`
 	RequestId                     types.String   `tfsdk:"request_id"`
@@ -104,6 +106,11 @@ func (r *resourceApiAccessPolicy) Schema(ctx context.Context, _ resource.SchemaR
 			"require_trusted_env": schema.BoolAttribute{
 				Required: true,
 			},
+			"require_trusted_env_secure_mode": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(false),
+			},
 			"id": schema.StringAttribute{
 				Computed: true,
 			},
@@ -126,6 +133,7 @@ func (r *resourceApiAccessPolicy) Create(ctx context.Context, req resource.Creat
 	createReq := osc.UpdateApiAccessPolicyRequest{
 		MaxAccessKeyExpirationSeconds: data.MaxAccessKeyExpirationSeconds.ValueInt64(),
 		RequireTrustedEnv:             data.RequireTrustedEnv.ValueBool(),
+		RequireTrustedEnvSecureMode:   data.RequireTrustedEnvSecureMode.ValueBool(),
 	}
 
 	createResp, err := r.Client.UpdateApiAccessPolicy(ctx, createReq, options.WithRetryTimeout(timeout))
@@ -176,13 +184,10 @@ func (r *resourceApiAccessPolicy) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	updateReq := osc.UpdateApiAccessPolicyRequest{}
-
-	if fwhelpers.HasChange(planData.MaxAccessKeyExpirationSeconds, stateData.MaxAccessKeyExpirationSeconds) {
-		updateReq.MaxAccessKeyExpirationSeconds = planData.MaxAccessKeyExpirationSeconds.ValueInt64()
-	}
-	if fwhelpers.HasChange(planData.RequireTrustedEnv, stateData.RequireTrustedEnv) {
-		updateReq.RequireTrustedEnv = planData.RequireTrustedEnv.ValueBool()
+	updateReq := osc.UpdateApiAccessPolicyRequest{
+		MaxAccessKeyExpirationSeconds: planData.MaxAccessKeyExpirationSeconds.ValueInt64(),
+		RequireTrustedEnv:             planData.RequireTrustedEnv.ValueBool(),
+		RequireTrustedEnvSecureMode:   planData.RequireTrustedEnvSecureMode.ValueBool(),
 	}
 
 	_, err := r.Client.UpdateApiAccessPolicy(ctx, updateReq, options.WithRetryTimeout(timeout))
@@ -225,6 +230,7 @@ func (r *resourceApiAccessPolicy) read(ctx context.Context, timeout time.Duratio
 func (r *resourceApiAccessPolicy) flatten(data apiAccessPolicyModel, policy osc.ApiAccessPolicy) apiAccessPolicyModel {
 	data.MaxAccessKeyExpirationSeconds = to.Int64(ptr.From(policy.MaxAccessKeyExpirationSeconds))
 	data.RequireTrustedEnv = to.Bool(ptr.From(policy.RequireTrustedEnv))
+	data.RequireTrustedEnvSecureMode = to.Bool(policy.RequireTrustedEnvSecureMode)
 
 	return data
 }
