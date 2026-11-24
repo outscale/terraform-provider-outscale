@@ -12,8 +12,13 @@ import (
 	"github.com/outscale/terraform-provider-outscale/version"
 )
 
-func deprecatedMsg(attr string) string {
-	return fmt.Sprintf("'%s' is deprecated: use the 'api' or 'oks' block for per-service configuration. This will be removed in the next major version of the provider.", attr)
+func deprecatedMsg(attr string, alternative ...string) string {
+	base := "'%s' attribute is deprecated"
+	if len(alternative) > 0 {
+		base += ": " + alternative[0]
+	}
+
+	return fmt.Sprintf(base+". It will be removed in the next major version of the provider.", attr)
 }
 
 // Provider ...
@@ -38,7 +43,7 @@ func Provider() *schema.Provider {
 			"endpoints": {
 				Type:       schema.TypeSet,
 				Optional:   true,
-				Deprecated: deprecatedMsg("endpoints"),
+				Deprecated: deprecatedMsg("endpoints", "use the 'api' or 'oks' block for per-service configuration"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api": {
@@ -72,11 +77,13 @@ func Provider() *schema.Provider {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Path to the x509 certificate",
+							Deprecated:  deprecatedMsg("x509_cert_path"),
 						},
 						"x509_key_path": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Path to the x509 key",
+							Deprecated:  deprecatedMsg("x509_key_path"),
 						},
 						"insecure": {
 							Type:        schema.TypeBool,
@@ -152,7 +159,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Deprecated:  deprecatedMsg("insecure"),
+				Deprecated:  deprecatedMsg("insecure", "use the 'api' or 'oks' block for per-service configuration"),
 				Description: "TLS insecure connection for IaaS API operations.",
 			},
 		},

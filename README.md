@@ -34,7 +34,7 @@
 
 ## ✅ Requirements
 - [Terraform 1.10.x or latest](https://www.terraform.io/downloads.html)
-- [Go 1.24.2](https://golang.org/doc/install) (to build the provider)
+- [Go 1.27.0](https://golang.org/doc/install) (to build the provider)
 
 ---
 
@@ -200,7 +200,7 @@ set HTTPS_PROXY=http://192.168.1.24:3128
 
 ## 🔐 x509 Authentication
 
-> ⚠️ **Deprecation:** Top-level `x509_cert_path` and `x509_key_path` attributes are deprecated. Use the `api` block configuration instead.
+> ⚠️ **Deprecation:** `x509_cert_path` and `x509_key_path` attributes are deprecated.
 
 ```hcl
 provider "outscale" {
