@@ -285,7 +285,7 @@ func (r *resourceAccessKey) Update(ctx context.Context, req resource.UpdateReque
 
 	updateReq := osc.UpdateAccessKeyRequest{
 		AccessKeyId: stateData.AccessKeyId.ValueString(),
-		State:       planData.State.ValueStringPointer(),
+		State:       new(osc.AccessKeyState(planData.State.ValueString())),
 	}
 	if useName := stateData.UserName.ValueString(); useName != "" {
 		updateReq.UserName = new(useName)
@@ -427,7 +427,7 @@ func (r *resourceAccessKey) flattenCreate(data AccessKeyModel, key osc.AccessKey
 func inactiveAccessKey(ctx context.Context, timeout time.Duration, r *resourceAccessKey, data AccessKeyModel) error {
 	req := osc.UpdateAccessKeyRequest{
 		AccessKeyId: data.Id.ValueString(),
-		State:       new("INACTIVE"),
+		State:       new(osc.AccessKeyStateINACTIVE),
 	}
 	if data.UserName.ValueString() != "" {
 		req.UserName = data.UserName.ValueStringPointer()
