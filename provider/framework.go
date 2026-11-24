@@ -104,7 +104,7 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 				Validators: []validator.Set{
 					setvalidator.ConflictsWith(path.MatchRoot("api"), path.MatchRoot("oks")),
 				},
-				DeprecationMessage: deprecatedMsg("endpoints"),
+				DeprecationMessage: deprecatedMsg("endpoints", "use the 'api' or 'oks' block for per-service configuration"),
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"api": schema.StringAttribute{
@@ -131,12 +131,14 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 							Optional: true,
 						},
 						"x509_cert_path": schema.StringAttribute{
-							Optional:    true,
-							Description: "Path to the x509 certificate",
+							Optional:           true,
+							Description:        "Path to the x509 certificate",
+							DeprecationMessage: deprecatedMsg("x509_cert_path"),
 						},
 						"x509_key_path": schema.StringAttribute{
-							Optional:    true,
-							Description: "Path to the x509 key",
+							Optional:           true,
+							Description:        "Path to the x509 key",
+							DeprecationMessage: deprecatedMsg("x509_key_path"),
 						},
 						"insecure": schema.BoolAttribute{
 							Optional:    true,
@@ -221,7 +223,7 @@ func (p *FrameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 			},
 			"insecure": schema.BoolAttribute{
 				Optional:           true,
-				DeprecationMessage: deprecatedMsg("insecure"),
+				DeprecationMessage: deprecatedMsg("insecure", "use the 'api' or 'oks' block for per-service configuration"),
 				Description:        "TLS insecure connection for IaaS API operations.",
 				Validators: []validator.Bool{
 					boolvalidator.ConflictsWith(path.MatchRoot("api"), path.MatchRoot("oks")),
