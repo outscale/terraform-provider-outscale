@@ -52,6 +52,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.33.7 h1:qwGa9MA8G7mBq2YphHFaygdPe5t9
 github.com/aws/aws-sdk-go-v2/service/sts v1.33.7/go.mod h1:+8h7PZb3yY5ftmVLD7ocEoE98hdc8PoKS0H3wfx1dlc=
 github.com/aws/smithy-go v1.28.1 h1:R/nXH00c8qcfCzQVELtRw+eLQWtzv+VAIEFJ1/xxXlQ=
 github.com/aws/smithy-go v1.28.1/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
+github.com/aws/smithy-go v1.28.9 h1:zkZ058OpNX0iGTK24b+ZUEQSMc11CBA6oO7xtKZfzkY=
+github.com/aws/smithy-go v1.28.9/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
 github.com/aws/smithy-go/aws-http-auth v1.2.1 h1:uRP2q0BGnhpE1/8iriH3yHVMCg6nhFNaVCDvKYPQVmQ=
 github.com/aws/smithy-go/aws-http-auth v1.2.1/go.mod h1:KL46VTjVK9De3jurMqDLBkXCP9vrAvD03zQrmyzyrQ0=
 github.com/benbjohnson/clock v1.3.0 h1:ip6w0uFQkncKQ979AypyG0ER7mqUSBdKLOgAle/AT8A=
