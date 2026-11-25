@@ -38,6 +38,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### 🌱 Others
 - (nothing yet)
 
+## [1.9.0] - 2026-11-25
+
+### ✨ Added
+* ✨ feat(oks_manifest): field_manager and import by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/870
+* ✨ feat(api_access_policy): add require_trusted_env_secure_mode attribute by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/883
+
+### 📝 Documentation
+* 📝 docs(oos): generate with template by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/865
+* 📝 docs: Fill OOS documentation by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/867
+* 📝 docs: Fix typo in api_access_policy by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/876
+* 📝 docs: Harmonize User Guide and API DOC links by @andrepasteur in https://github.com/outscale/terraform-provider-outscale/pull/877
+
+### 🐛 Fixed
+* 🐛 fix(oks_manifest): default namespace could not be used by @ryohkhn in https://github.com/outscale/terraform-provider-outscale/pull/866
+
 ## [1.9.0-beta.2] - 2026-10-19
 
 ### ✨ Added
