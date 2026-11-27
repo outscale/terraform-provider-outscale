@@ -27,9 +27,11 @@ jobs:
     acceptance-test:
         environment: test-${{ inputs.region }}
         runs-on:
-            - authenticated
-            - ${{ inputs.region }}
-            - ${{ inputs.service }}
+            group: iac
+            labels:
+                - authenticated
+                - ${{ inputs.region }}
+                - ${{ inputs.service }}
         steps:
             - name: 🔒🧹 Setup Vault & Frieza
               id: secrets
